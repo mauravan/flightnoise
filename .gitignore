@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+data/anp/*.json
+!data/anp/make_placeholders.py
+nachweis.md
+result.json
+data/*.sqlite

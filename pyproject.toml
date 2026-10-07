@@ -1,0 +1,32 @@
+[project]
+name = "fluglaerm"
+version = "0.1.0"
+description = "Fluglärm-Berechnungstool: rechtskonforme Engine (LSV Anhang 5 / ECAC Doc 29) + separates informatives Ist-Lärm-Modul (OpenSky)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "scipy",
+    "pyproj",
+    "shapely",
+    "requests",
+    "pandas",
+    "click",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+fluglaerm = "fluglaerm.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fluglaerm*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

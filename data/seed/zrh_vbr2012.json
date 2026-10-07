@@ -1,0 +1,1423 @@
+{
+ "airport_icao": "LSZH",
+ "airport_east": 2684000.0,
+ "airport_north": 1256000.0,
+ "periods": [
+  {
+   "id": "tag",
+   "start_hour": 6,
+   "end_hour": 22
+  },
+  {
+   "id": "nacht1",
+   "start_hour": 22,
+   "end_hour": 23
+  },
+  {
+   "id": "nacht2",
+   "start_hour": 23,
+   "end_hour": 24
+  },
+  {
+   "id": "letzte_nacht",
+   "start_hour": 5,
+   "end_hour": 6
+  }
+ ],
+ "routes": [
+  {
+   "id": "DEP-14",
+   "kind": "departure",
+   "runway": "14",
+   "segments": [
+    {
+     "east": 2681565.3581159483,
+     "north": 1256567.907471708,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682208.145725635,
+     "north": 1255801.8630285892,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682850.9333353215,
+     "north": 1255035.81858547,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2683493.720945008,
+     "north": 1254269.774142351,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2684136.5085546947,
+     "north": 1253503.7296992321,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2684779.2961643813,
+     "north": 1252737.685256113,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2685422.0837740675,
+     "north": 1251971.6408129942,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2686064.871383754,
+     "north": 1251205.5963698751,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2686707.6589934407,
+     "north": 1250439.5519267563,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2687350.4466031273,
+     "north": 1249673.5074836372,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2687993.234212814,
+     "north": 1248907.4630405183,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2688636.0218225005,
+     "north": 1248141.4185973993,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2689278.8094321867,
+     "north": 1247375.3741542804,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2689921.5970418733,
+     "north": 1246609.3297111613,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2690564.38465156,
+     "north": 1245843.2852680422,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2691207.1722612465,
+     "north": 1245077.2408249234,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2691849.959870933,
+     "north": 1244311.1963818043,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  },
+  {
+   "id": "ARR-14",
+   "kind": "arrival",
+   "runway": "14",
+   "segments": [
+    {
+     "east": 2686434.6418840517,
+     "north": 1255432.092528292,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2685791.854274365,
+     "north": 1256198.1369714108,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2685149.0666646785,
+     "north": 1256964.18141453,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2684506.279054992,
+     "north": 1257730.225857649,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2683863.4914453053,
+     "north": 1258496.2703007679,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2683220.7038356187,
+     "north": 1259262.314743887,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2682577.9162259325,
+     "north": 1260028.3591870058,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2681935.128616246,
+     "north": 1260794.4036301249,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2681292.3410065593,
+     "north": 1261560.4480732437,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2680649.5533968727,
+     "north": 1262326.4925163628,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2680006.765787186,
+     "north": 1263092.5369594817,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2679363.9781774995,
+     "north": 1263858.5814026007,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2678721.190567813,
+     "north": 1264624.6258457196,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2678078.4029581267,
+     "north": 1265390.6702888387,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2677435.61534844,
+     "north": 1266156.7147319578,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2676792.8277387535,
+     "north": 1266922.7591750766,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2676150.040129067,
+     "north": 1267688.8036181957,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  },
+  {
+   "id": "DEP-16",
+   "kind": "departure",
+   "runway": "16",
+   "segments": [
+    {
+     "east": 2683034.051927113,
+     "north": 1257776.7791985741,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2683376.072070439,
+     "north": 1256837.0865777882,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2683718.0922137643,
+     "north": 1255897.3939570023,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2684060.1123570898,
+     "north": 1254957.7013362164,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2684402.1325004157,
+     "north": 1254018.0087154305,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2684744.152643741,
+     "north": 1253078.3160946446,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2685086.172787067,
+     "north": 1252138.6234738587,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2685428.1929303925,
+     "north": 1251198.9308530728,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2685770.2130737184,
+     "north": 1250259.2382322869,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2686112.233217044,
+     "north": 1249319.545611501,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2686454.2533603697,
+     "north": 1248379.852990715,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2686796.273503695,
+     "north": 1247440.1603699292,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2687138.293647021,
+     "north": 1246500.4677491433,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2687480.3137903465,
+     "north": 1245560.7751283573,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2687822.3339336724,
+     "north": 1244621.0825075714,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2688164.354076998,
+     "north": 1243681.3898867855,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2688506.3742203237,
+     "north": 1242741.6972659996,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  },
+  {
+   "id": "ARR-16",
+   "kind": "arrival",
+   "runway": "16",
+   "segments": [
+    {
+     "east": 2683274.5013554725,
+     "north": 1253607.5845434398,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682932.4812121466,
+     "north": 1254547.2771642257,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682590.461068821,
+     "north": 1255486.9697850116,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682248.4409254957,
+     "north": 1256426.6624057975,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2681906.42078217,
+     "north": 1257366.3550265834,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2681564.4006388444,
+     "north": 1258306.0476473693,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2681222.3804955184,
+     "north": 1259245.7402681552,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2680880.360352193,
+     "north": 1260185.4328889411,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2680538.340208867,
+     "north": 1261125.125509727,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2680196.3200655417,
+     "north": 1262064.818130513,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2679854.2999222158,
+     "north": 1263004.5107512989,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2679512.2797788903,
+     "north": 1263944.2033720848,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2679170.2596355644,
+     "north": 1264883.8959928707,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2678828.239492239,
+     "north": 1265823.5886136566,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2678486.219348913,
+     "north": 1266763.2812344425,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2678144.1992055876,
+     "north": 1267702.9738552284,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2677802.1790622617,
+     "north": 1268642.6664760143,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  },
+  {
+   "id": "DEP-28",
+   "kind": "departure",
+   "runway": "28",
+   "segments": [
+    {
+     "east": 2686316.911861358,
+     "north": 1257622.3191506905,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2685332.1041083457,
+     "north": 1257795.9673283575,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2684347.2963553336,
+     "north": 1257969.6155060243,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2683362.4886023216,
+     "north": 1258143.2636836912,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2682377.680849309,
+     "north": 1258316.9118613582,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2681392.873096297,
+     "north": 1258490.560039025,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2680408.065343285,
+     "north": 1258664.208216692,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2679423.2575902725,
+     "north": 1258837.856394359,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2678438.4498372604,
+     "north": 1259011.504572026,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2677453.6420842484,
+     "north": 1259185.1527496928,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2676468.834331236,
+     "north": 1259358.8009273598,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2675484.026578224,
+     "north": 1259532.4491050267,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2674499.2188252117,
+     "north": 1259706.0972826937,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2673514.4110721992,
+     "north": 1259879.7454603605,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2672529.603319187,
+     "north": 1260053.3936380276,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2671544.795566175,
+     "north": 1260227.0418156944,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2670559.9878131626,
+     "north": 1260400.6899933612,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  },
+  {
+   "id": "ARR-28",
+   "kind": "arrival",
+   "runway": "28",
+   "segments": [
+    {
+     "east": 2681683.088138642,
+     "north": 1254377.6808493095,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682667.8958916543,
+     "north": 1254204.0326716425,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2683652.7036446664,
+     "north": 1254030.3844939757,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2684637.5113976784,
+     "north": 1253856.7363163088,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2685622.319150691,
+     "north": 1253683.0881386418,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2686607.126903703,
+     "north": 1253509.439960975,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2687591.934656715,
+     "north": 1253335.791783308,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2688576.7424097275,
+     "north": 1253162.143605641,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2689561.5501627396,
+     "north": 1252988.495427974,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2690546.3579157516,
+     "north": 1252814.8472503072,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2691531.165668764,
+     "north": 1252641.1990726402,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2692515.973421776,
+     "north": 1252467.5508949733,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2693500.7811747883,
+     "north": 1252293.9027173063,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2694485.5889278008,
+     "north": 1252120.2545396395,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2695470.396680813,
+     "north": 1251946.6063619724,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2696455.204433825,
+     "north": 1251772.9581843056,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2697440.0121868374,
+     "north": 1251599.3100066388,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  },
+  {
+   "id": "DEP-34",
+   "kind": "departure",
+   "runway": "34",
+   "segments": [
+    {
+     "east": 2682804.6550450795,
+     "north": 1253436.5744717768,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682462.6349017536,
+     "north": 1254376.2670925627,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2682120.614758428,
+     "north": 1255315.9597133487,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2681778.5946151027,
+     "north": 1256255.6523341346,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2681436.574471777,
+     "north": 1257195.3449549205,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2681094.5543284514,
+     "north": 1258135.0375757064,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2680752.5341851255,
+     "north": 1259074.7301964923,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2680410.5140418,
+     "north": 1260014.4228172782,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2680068.493898474,
+     "north": 1260954.115438064,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2679726.4737551487,
+     "north": 1261893.80805885,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2679384.453611823,
+     "north": 1262833.500679636,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2679042.4334684974,
+     "north": 1263773.1933004218,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2678700.4133251715,
+     "north": 1264712.8859212077,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2678358.393181846,
+     "north": 1265652.5785419936,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2678016.37303852,
+     "north": 1266592.2711627795,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2677674.3528951947,
+     "north": 1267531.9637835654,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2677332.3327518688,
+     "north": 1268471.6564043513,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  },
+  {
+   "id": "ARR-34",
+   "kind": "arrival",
+   "runway": "34",
+   "segments": [
+    {
+     "east": 2685195.3449549205,
+     "north": 1258563.4255282232,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2685537.3650982464,
+     "north": 1257623.7329074373,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2685879.385241572,
+     "north": 1256684.0402866513,
+     "alt_m": 0.0,
+     "thrust": null
+    },
+    {
+     "east": 2686221.4053848973,
+     "north": 1255744.3476658654,
+     "alt_m": 480.0,
+     "thrust": null
+    },
+    {
+     "east": 2686563.425528223,
+     "north": 1254804.6550450795,
+     "alt_m": 560.0,
+     "thrust": null
+    },
+    {
+     "east": 2686905.4456715486,
+     "north": 1253864.9624242936,
+     "alt_m": 640.0,
+     "thrust": null
+    },
+    {
+     "east": 2687247.4658148745,
+     "north": 1252925.2698035077,
+     "alt_m": 720.0,
+     "thrust": null
+    },
+    {
+     "east": 2687589.4859582,
+     "north": 1251985.5771827218,
+     "alt_m": 800.0,
+     "thrust": null
+    },
+    {
+     "east": 2687931.506101526,
+     "north": 1251045.884561936,
+     "alt_m": 880.0,
+     "thrust": null
+    },
+    {
+     "east": 2688273.5262448513,
+     "north": 1250106.19194115,
+     "alt_m": 960.0,
+     "thrust": null
+    },
+    {
+     "east": 2688615.546388177,
+     "north": 1249166.499320364,
+     "alt_m": 1040.0,
+     "thrust": null
+    },
+    {
+     "east": 2688957.5665315026,
+     "north": 1248226.8066995782,
+     "alt_m": 1120.0,
+     "thrust": null
+    },
+    {
+     "east": 2689299.5866748285,
+     "north": 1247287.1140787923,
+     "alt_m": 1200.0,
+     "thrust": null
+    },
+    {
+     "east": 2689641.606818154,
+     "north": 1246347.4214580064,
+     "alt_m": 1280.0,
+     "thrust": null
+    },
+    {
+     "east": 2689983.62696148,
+     "north": 1245407.7288372205,
+     "alt_m": 1360.0,
+     "thrust": null
+    },
+    {
+     "east": 2690325.6471048053,
+     "north": 1244468.0362164346,
+     "alt_m": 1440.0,
+     "thrust": null
+    },
+    {
+     "east": 2690667.6672481312,
+     "north": 1243528.3435956487,
+     "alt_m": 1520.0,
+     "thrust": null
+    }
+   ],
+   "share": 0.25
+  }
+ ],
+ "movements": [
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "B777-300ER",
+   "period": "tag",
+   "count": 4802,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "A320-214",
+   "period": "tag",
+   "count": 20007,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "E190",
+   "period": "tag",
+   "count": 15205,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht1",
+   "count": 137,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "A320-214",
+   "period": "nacht1",
+   "count": 570,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "E190",
+   "period": "nacht1",
+   "count": 433,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "B777-300ER",
+   "period": "nacht2",
+   "count": 14,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "A320-214",
+   "period": "nacht2",
+   "count": 58,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-14",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-16",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-16",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-28",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-28",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-34",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "ARR-34",
+   "aircraft_anp": "E190",
+   "period": "nacht2",
+   "count": 44,
+   "weight_class": "gross"
+  },
+  {
+   "route_id": "DEP-14",
+   "aircraft_anp": "C172",
+   "period": "tag",
+   "count": 20000,
+   "weight_class": "klein"
+  }
+ ],
+ "source": "nominal_placeholder"
+}
