@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -10,9 +12,14 @@ import click
 
 from fluglaerm.common.geo import lv95_to_wgs84, resolve_egrid, resolve_height
 from fluglaerm.common.types import MovementDataset, Receiver
+from fluglaerm.data_setup import apply, plan
 from fluglaerm.engine.engine import evaluate
 from fluglaerm.ist_laerm.ist import evaluate_ist
-from fluglaerm.ist_laerm.opensky import OpenSkyClient
+from fluglaerm.anp_db import AnpDatabase
+from fluglaerm.ist_laerm.opensky import OpenSkyClient, load_credentials
+from fluglaerm.ist_laerm.own import evaluate_own, format_own_header, format_own_row
+from fluglaerm.ist_laerm.report import render_own_report
+from fluglaerm.ist_laerm.registry import load_db
 from fluglaerm.ist_laerm.track import build_tracks
 from fluglaerm.report.report import render_json, render_markdown
 
@@ -57,7 +64,7 @@ def load_dataset(path: str) -> tuple[MovementDataset, bool]:
 
 @click.group()
 def cli() -> None:
-    """Fluglärm-Rechner: Engine (genehmigt) + Ist-Modul (informativ)."""
+    """Fluglärm-Rechner: Engine (genehmigt) + Ist-Modul (informativ) + Daten-Setup."""
 
 
 @cli.command()
@@ -135,6 +142,152 @@ def parcel(east, north, es, nutzung, ist, dataset, egrid, height):
     Path("nachweis.md").write_text(md, encoding="utf-8")
     Path("result.json").write_text(js, encoding="utf-8")
     click.echo(md)
+
+
+@cli.command()
+@click.option("--egrid", default=None)
+@click.option("--east", type=float, default=None)
+@click.option("--north", type=float, default=None)
+@click.option("--height", type=float, default=0.0, help="Empfängerhöhe über Flughafen-Grund (m)")
+@click.option("--radius", type=float, default=15000.0, help="Suchradius um den Empfänger (m)")
+@click.option("--serials", type=int, multiple=True, help="Empfänger-Seriennummer(n); ohne Angabe alle eigenen")
+@click.option("--time", "time_", type=int, default=None, help="Unix-Zeit (Default: jetzt)")
+@click.option("--window", type=int, default=0, help="Fenster in Sekunden (0 = nur aktueller Stand)")
+@click.option("--interval", type=int, default=60, help="Abtast-Intervall des Backfills in Sekunden")
+@click.option("--db", default="data/anp.sqlite")
+@click.option("--registry", default="data/aircraft_registry.json")
+@click.option("--client-id", default=None, envvar="OPENSKY_CLIENT_ID")
+@click.option("--client-secret", default=None, envvar="OPENSKY_CLIENT_SECRET")
+@click.option("--credentials", default=None, help="JSON-Datei mit clientId/clientSecret (statt --client-id/--client-secret bzw. Env)")
+@click.option("--debug", is_flag=True, help="Debug-Logging auf stderr")
+@click.option("--list-aircraft", is_flag=True, help="ANP-Flugzeuge (acft_id, Typ, Triebwerke) ausgeben und beenden")
+@click.option("--output", "output_path", default=None,
+              type=click.Path(dir_okay=False, writable=True),
+              help="Report-Datei (Markdown) mit Tabelle + Herleitung je Flugzeug")
+def own(egrid, east, north, height, radius, serials, time_, window, interval, db, registry, client_id, client_secret, credentials, debug, list_aircraft, output_path):
+    """Ist-Pegel am Empfänger aus eigenen OpenSky-States gegen die ANP-Datenbank."""
+    if debug:
+        logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(name)s: %(message)s")
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+    log = logging.getLogger("fluglaerm.cli")
+    if window < 0:
+        raise click.UsageError("--window muss >= 0 sein")
+    if window > 0 and interval < 5:
+        raise click.UsageError("--interval muss mindestens 5 s sein (API-Zeitauflösung)")
+    log.debug(
+        "own: egrid=%s east=%s north=%s height=%s radius=%.0f serials=%s time=%s "
+        "window=%s interval=%s db=%s registry=%s credentials=%s",
+        egrid, east, north, height, radius, list(serials) or None, time_,
+        window, interval, db, registry, credentials,
+    )
+    if list_aircraft:
+        try:
+            dbh = AnpDatabase(db)
+        except FileNotFoundError as exc:
+            raise click.ClickException(str(exc))
+        import sqlite3
+
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        for r in con.execute("SELECT acft_id, description, number_of_engines, max_sea_level_static_thrust_lb FROM aircraft ORDER BY acft_id"):
+            click.echo(f"{r[0]} {r[1]} {r[2]} Triebwerke {r[3]} lb")
+        return
+    east, north, height_m = _receiver_position(egrid, east, north, height, _LSZH_ARP_EAST, _LSZH_ARP_NORTH)
+    log.debug("Empfänger: E=%.1f N=%.1f h=%.1f m (LSZH-ARP E=%.0f N=%.0f)",
+              east, north, height_m, _LSZH_ARP_EAST, _LSZH_ARP_NORTH)
+    p = Path(registry)
+    if not p.exists():
+        raise click.ClickException(f"Registry nicht gefunden: {registry}")
+    reg = json.loads(p.read_text(encoding="utf-8"))
+    if not isinstance(reg, dict):
+        raise click.ClickException(f"Registry {registry} muss ein JSON-Objekt sein")
+    log.debug("Registry %s: %d Einträge", registry, len(reg))
+    if credentials:
+        if not client_id or not client_secret:
+            try:
+                file_id, file_secret = load_credentials(credentials)
+            except ValueError as exc:
+                raise click.ClickException(str(exc))
+            client_id = client_id or file_id
+            client_secret = client_secret or file_secret
+    log.debug(
+        "Credentials: client_id=%s Quelle=%s",
+        client_id or "-",
+        "Option/Env" if client_id else "keine (own_states wird abbrechen)",
+    )
+    client = OpenSkyClient(client_id, client_secret)
+    end = time_ or int(time.time())
+    start = end - window
+    try:
+        if window > 0:
+            states = client.own_history(start, end, interval, list(serials) or None)
+        else:
+            states = client.own_states(list(serials) or None, time_)
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+    if not states:
+        log.debug("keine States → Abbruch")
+        click.echo("keine States vom eigenen Empfänger")
+        return
+    try:
+        dbh = AnpDatabase.with_archive(db)
+    except FileNotFoundError as exc:
+        raise click.ClickException(str(exc))
+    log.debug("ANP-DB %s geöffnet", db)
+    tracks = build_tracks(states, east, north, max_dist_m=radius, type_by_icao24=reg)
+    log.debug("build_tracks: %d States → %d Tracks (radius %.0f m)",
+              len(states), len(tracks), radius)
+    unknown_hexes = {t.icao24 for t in tracks if t.icao24 not in reg}
+    aircraft_db = None
+    if unknown_hexes:
+        adb = p.with_name("aircraft.csv.gz")
+        if adb.exists():
+            aircraft_db = load_db(adb)
+            log.debug("Flugzeug-DB %s: %d Zeilen (%d unbekannte Hex-IDs)",
+                      adb, len(aircraft_db), len(unknown_hexes))
+    receiver = Receiver(east=east, north=north, es=2, nutzung="wohnen", height_m=height_m)
+    res = evaluate_own(receiver, tracks, dbh, reg, peak=window > 0,
+                       aircraft_db=aircraft_db)
+    click.echo(format_own_header())
+    for r in res.rows:
+        click.echo(format_own_row(r))
+    for s in res.substituted:
+        click.echo(f"ersetzt: {s}")
+    for u in res.unknown:
+        click.echo(f"unbekannt: {u}")
+    for s in res.skipped:
+        click.echo(f"übersprungen: {s}")
+    click.echo(f"L_jetzt={res.level_db:.1f} dB aus {len(res.rows)} Flugzeugen")
+    click.echo(res.label)
+    if output_path:
+        report = render_own_report(res, receiver, db_path=db, registry_path=registry,
+                                   radius=radius, window=window)
+        Path(output_path).write_text(report, encoding="utf-8")
+        click.echo(f"Report geschrieben: {output_path}")
+
+
+@cli.command()
+@click.option("--check", is_flag=True,
+              help="Nur prüfen und berichten, nichts anlegen oder laden")
+@click.option("--gwr", is_flag=True,
+              help="data/ch.sqlite (1.7 GB, nur für --egrid) mitladen")
+def setup(check, gwr):
+    """Daten-Setup: alles automatisch bereitstellen, was geht; sonst sagen woher."""
+    root = Path(".")
+    if check:
+        items, report = plan(root, gwr), []
+    else:
+        items, report = apply(root, gwr)
+    for it in items:
+        click.echo(f"[{it.status:>6}]  {it.path:<32} {it.name}"
+                   + (f" — {it.detail}" if it.detail else ""))
+    manual = [it for it in items if it.status == "manual"]
+    for line in report:
+        click.echo(line)
+    n_ok = sum(1 for it in items if it.status in ("ok", "fixed"))
+    click.echo(f"Setup: {n_ok}/{len(items)} bereit, {len(manual)} manuell"
+               + (" (--check: nichts verändert)" if check else ""))
+    if manual:
+        click.get_current_context().exit(1)
 
 
 def main() -> None:

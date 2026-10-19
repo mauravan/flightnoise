@@ -7,4 +7,8 @@ data/anp/*.json
 !data/anp/make_placeholders.py
 nachweis.md
 result.json
+credentials.json
 data/*.sqlite
+data/easa_anp/
+data/aircraft.csv.gz
+data/aircraft_registry.json

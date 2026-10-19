@@ -16,6 +16,8 @@ class Position:
     alt_m: float
     speed_kn: float
     track_deg: float
+    vertical_rate_ms: float = 0.0
+    on_ground: bool = False
 
 
 @dataclass
@@ -58,6 +60,8 @@ def build_tracks(
                     alt_m=float(alt),
                     speed_kn=float(v_ms) * 1.94384,
                     track_deg=float(r.get("true_track") or 0.0),
+                    vertical_rate_ms=float(r.get("vertical_rate") or 0.0),
+                    on_ground=bool(r.get("on_ground")),
                 )
             )
         if not near:
