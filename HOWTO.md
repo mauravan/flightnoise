@@ -100,7 +100,7 @@ here from `credentials.json`, s. §4f):
 | `fluglaerm parcel` | Full Nachweis: engine (+ optional Ist comparison) | stdout + `nachweis.md` + `result.json` in CWD |
 | `fluglaerm ist` | Actual traffic Leq from OpenSky ADS-B | stdout: `Leq_ist`, flight count |
 | `fluglaerm own` | Instantaneous LAmax/SEL at the receiver from own OpenSky states vs ANP DB | stdout: per-aircraft rows + `L_jetzt` |
-| `fluglaerm setup` | Set up/verify all required data (incl. aircraft registry) | status lines + manual instructions |
+| `fluglaerm collect` | Poll the tar1090 feeder and append states to the local SQLite history | stdout: `N States gespeichert`; DB `data/own_states.sqlite` |
 
 Options:
 
@@ -133,14 +133,24 @@ Options:
   `--credentials PATH` (JSON mit `clientId`/`clientSecret`, oder
   `client_id`/`client_secret`; fills whatever `--client-id`/`--client-secret`/
   env leave unset), `--debug` (Debug-Log auf stderr),
-  `--list-aircraft` (prints the ANP aircraft table and exits).
+  `--list-aircraft` (prints the ANP aircraft table and exits),
+  `--source opensky|local` (default opensky; local reads the SQLite history
+  from `--states-db` — `window=0` loads the last `interval` seconds,
+  `--serials` ignored, no credentials needed),
+  `--states-db PATH` (default `data/own_states.sqlite`, only with
+  `--source local`).
 - `setup`: `--check` (report only, changes nothing), `--gwr` (also fetch
   `data/ch.sqlite`, 1.7 GB, `--egrid` only). With the aircraft database
   present, `setup` also builds `data/aircraft_registry.json` automatically.
   It also fetches the EASA ANP Archive v2.3 (`data/anp_archive.sqlite`) and
   the EASA substitution table (`substitutions` in `data/anp.sqlite`) that
   `own` uses for aircraft types the ANP database does not carry (e.g.
-  A320-ceo). Exit 1 iff manual items remain.
+- `collect`: `--host TEXT` (required, feeder IP or mDNS name), `--port INT`
+  (default 8080), `--db PATH` (default `data/own_states.sqlite`),
+  `--interval INT` (default 5, sampling interval in seconds),
+  `--duration FLOAT` (total run time in seconds; default: endless until
+  Ctrl-C), `--once` (query once, store, exit — for cron/launchd),
+  `--debug` (Debug-Log auf stderr). `--once` wins over `--duration`.
 
 ## 4. Data required
 
@@ -339,6 +349,31 @@ No index on `EGRID` — one full scan (~2 s) per run. Unknown EGRID or missing
 DB fails loudly (`ClickException`, exit 1); an empty lot or GWR gap then
 falls back to manual `--east`/`--north`. Same CWD rule as §1: run from the
 project root, `data/ch.sqlite` resolves relative to CWD.
+
+### g) Local state history (`collect` + `own --source local`)
+
+OpenSky `/states/own` is live-only (no retention), so the project keeps its
+own history: `collect` polls the adsb.im feeder's tar1090 endpoint
+(`http://<pi>:8080/data/aircraft.json`, refreshed ~1 s) and appends snapshots
+to `data/own_states.sqlite` (git-ignored via `data/*.sqlite`):
+
+```sh
+.venv/bin/fluglaerm collect --host <pi> --once --debug   # single snapshot (cron/launchd)
+.venv/bin/fluglaerm collect --host <pi> --duration 3600  # 1 h at 5 s sampling
+```
+
+Read-back with `own --source local` (no OpenSky credentials needed; the
+feeder already is this receiver's data, so `--serials` is ignored):
+
+```sh
+.venv/bin/fluglaerm own --source local --states-db data/own_states.sqlite --window 3600 --egrid CH330877058702 --es 2 --nutzung wohnen
+```
+
+`--window 3600` loads the last hour ending now; `--window 0` loads the last
+`--interval` seconds (default 60). A missing DB file fails loudly
+(`States-DB nicht gefunden`, exit 1); `collect --host 127.0.0.1 --once`
+against a dead feeder likewise (`Feeder nicht erreichbar`, exit 1), while
+the loop mode only logs a warning and retries.
 
 ## 5. Interpreting output
 

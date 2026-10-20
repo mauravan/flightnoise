@@ -20,6 +20,7 @@ from fluglaerm.ist_laerm.opensky import OpenSkyClient, load_credentials
 from fluglaerm.ist_laerm.own import evaluate_own, format_own_header, format_own_row
 from fluglaerm.ist_laerm.report import render_own_report
 from fluglaerm.ist_laerm.registry import load_db
+from fluglaerm.ist_laerm.collect import StateStore, collect_once, import_history
 from fluglaerm.ist_laerm.track import build_tracks
 from fluglaerm.report.report import render_json, render_markdown
 
@@ -156,16 +157,22 @@ def parcel(east, north, es, nutzung, ist, dataset, egrid, height):
 @click.option("--interval", type=int, default=60, help="Abtast-Intervall des Backfills in Sekunden")
 @click.option("--db", default="data/anp.sqlite")
 @click.option("--registry", default="data/aircraft_registry.json")
+@click.option("--es", type=click.IntRange(1, 4), default=2,
+              help="Empfindlichkeitsstufe 1–4 (Default 2)")
+@click.option("--nutzung", type=click.Choice(["wohnen", "betrieb"]), default="wohnen",
+              help="Nutzung (Default wohnen)")
 @click.option("--client-id", default=None, envvar="OPENSKY_CLIENT_ID")
 @click.option("--client-secret", default=None, envvar="OPENSKY_CLIENT_SECRET")
+@click.option("--source", type=click.Choice(["opensky", "local"]), default="opensky",
+              help="States-Quelle: opensky (live) oder local (SQLite-Historie; window=0 lädt die letzten interval Sekunden, --serials wird ignoriert)")
+@click.option("--states-db", default="data/own_states.sqlite", help="Lokale States-DB (nur mit --source local)")
 @click.option("--credentials", default=None, help="JSON-Datei mit clientId/clientSecret (statt --client-id/--client-secret bzw. Env)")
 @click.option("--debug", is_flag=True, help="Debug-Logging auf stderr")
 @click.option("--list-aircraft", is_flag=True, help="ANP-Flugzeuge (acft_id, Typ, Triebwerke) ausgeben und beenden")
 @click.option("--output", "output_path", default=None,
               type=click.Path(dir_okay=False, writable=True),
               help="Report-Datei (Markdown) mit Tabelle + Herleitung je Flugzeug")
-def own(egrid, east, north, height, radius, serials, time_, window, interval, db, registry, client_id, client_secret, credentials, debug, list_aircraft, output_path):
-    """Ist-Pegel am Empfänger aus eigenen OpenSky-States gegen die ANP-Datenbank."""
+def own(egrid, east, north, height, radius, serials, time_, window, interval, db, registry, es, nutzung, client_id, client_secret, credentials, debug, list_aircraft, output_path, source, states_db):
     if debug:
         logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(name)s: %(message)s")
         logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -176,9 +183,9 @@ def own(egrid, east, north, height, radius, serials, time_, window, interval, db
         raise click.UsageError("--interval muss mindestens 5 s sein (API-Zeitauflösung)")
     log.debug(
         "own: egrid=%s east=%s north=%s height=%s radius=%.0f serials=%s time=%s "
-        "window=%s interval=%s db=%s registry=%s credentials=%s",
+        "window=%s interval=%s db=%s registry=%s es=%s nutzung=%s credentials=%s",
         egrid, east, north, height, radius, list(serials) or None, time_,
-        window, interval, db, registry, credentials,
+        window, interval, db, registry, es, nutzung, credentials,
     )
     if list_aircraft:
         try:
@@ -201,32 +208,40 @@ def own(egrid, east, north, height, radius, serials, time_, window, interval, db
     if not isinstance(reg, dict):
         raise click.ClickException(f"Registry {registry} muss ein JSON-Objekt sein")
     log.debug("Registry %s: %d Einträge", registry, len(reg))
-    if credentials:
-        if not client_id or not client_secret:
-            try:
-                file_id, file_secret = load_credentials(credentials)
-            except ValueError as exc:
-                raise click.ClickException(str(exc))
-            client_id = client_id or file_id
-            client_secret = client_secret or file_secret
-    log.debug(
-        "Credentials: client_id=%s Quelle=%s",
-        client_id or "-",
-        "Option/Env" if client_id else "keine (own_states wird abbrechen)",
-    )
-    client = OpenSkyClient(client_id, client_secret)
     end = time_ or int(time.time())
-    start = end - window
-    try:
-        if window > 0:
-            states = client.own_history(start, end, interval, list(serials) or None)
-        else:
-            states = client.own_states(list(serials) or None, time_)
-    except ValueError as exc:
-        raise click.ClickException(str(exc))
+    if source == "local":
+        store = StateStore(states_db)
+        if not Path(states_db).exists():
+            raise click.ClickException(f"States-DB nicht gefunden: {states_db} "
+                                       f"(erst mit 'fluglaerm collect --host HOST' füllen)")
+        eff_window = window if window > 0 else interval
+        states = store.states_between(end - eff_window, end)
+        log.debug("lokale States-DB %s: %d States (Fenster %d s)", states_db, len(states), eff_window)
+    else:
+        if credentials:
+            if not client_id or not client_secret:
+                try:
+                    file_id, file_secret = load_credentials(credentials)
+                except ValueError as exc:
+                    raise click.ClickException(str(exc))
+                client_id = client_id or file_id
+                client_secret = client_secret or file_secret
+        log.debug(
+            "Credentials: client_id=%s Quelle=%s",
+            client_id or "-",
+            "Option/Env" if client_id else "keine (own_states wird abbrechen)",
+        )
+        client = OpenSkyClient(client_id, client_secret)
+        start = end - window
+        try:
+            if window > 0:
+                states = client.own_history(start, end, interval, list(serials) or None)
+            else:
+                states = client.own_states(list(serials) or None, time_)
+        except ValueError as exc:
+            raise click.ClickException(str(exc))
     if not states:
         log.debug("keine States → Abbruch")
-        click.echo("keine States vom eigenen Empfänger")
         return
     try:
         dbh = AnpDatabase.with_archive(db)
@@ -244,7 +259,7 @@ def own(egrid, east, north, height, radius, serials, time_, window, interval, db
             aircraft_db = load_db(adb)
             log.debug("Flugzeug-DB %s: %d Zeilen (%d unbekannte Hex-IDs)",
                       adb, len(aircraft_db), len(unknown_hexes))
-    receiver = Receiver(east=east, north=north, es=2, nutzung="wohnen", height_m=height_m)
+    receiver = Receiver(east=east, north=north, es=es, nutzung=nutzung, height_m=height_m)
     res = evaluate_own(receiver, tracks, dbh, reg, peak=window > 0,
                        aircraft_db=aircraft_db)
     click.echo(format_own_header())
@@ -258,11 +273,73 @@ def own(egrid, east, north, height, radius, serials, time_, window, interval, db
         click.echo(f"übersprungen: {s}")
     click.echo(f"L_jetzt={res.level_db:.1f} dB aus {len(res.rows)} Flugzeugen")
     click.echo(res.label)
+
+    def _fmt_db(v: float) -> str:
+        return "−∞" if v == float("-inf") else f"{v:.1f}"
+    click.echo("")
+    click.echo("Beurteilungspegel (Ist-Beobachtung, kein Jahresmittel)")
+    click.echo(f"ES {receiver.es} ({receiver.nutzung})")
+    click.echo(f"Lrt (Tag):   {_fmt_db(res.lrt)} — {res.status.get('tag', '—')}")
+    click.echo(f"Lrn (nacht1): {_fmt_db(res.lrn.get('nacht1', float('-inf')))} — {res.status.get('nacht1', '—')}")
+    click.echo(f"Lrn (nacht2): {_fmt_db(res.lrn.get('nacht2', float('-inf')))} — {res.status.get('nacht2', '—')}")
+    click.echo(f"Lrk: {_fmt_db(res.lrk)}   Lrg: {_fmt_db(res.lrg)}")
+    click.echo(f"Klein: {res.n_klein}   Gross: {res.n_gross}")
     if output_path:
         report = render_own_report(res, receiver, db_path=db, registry_path=registry,
                                    radius=radius, window=window)
         Path(output_path).write_text(report, encoding="utf-8")
         click.echo(f"Report geschrieben: {output_path}")
+
+
+@cli.command()
+@click.option("--host", required=True, help="Feeder-Host (IP oder mDNS-Name)")
+@click.option("--port", type=int, default=8080)
+@click.option("--db", default="data/own_states.sqlite")
+@click.option("--interval", type=click.IntRange(1, None), default=5, help="Abtast-Intervall in Sekunden")
+@click.option("--duration", type=float, default=None, help="Gesamtlaufzeit in Sekunden (Default: endlos bis Ctrl-C)")
+@click.option("--once", is_flag=True, help="Einmal abfragen, speichern, beenden (für cron/launchd)")
+@click.option("--debug", is_flag=True, help="Debug-Logging auf stderr")
+def collect(host, port, db, interval, duration, once, debug):
+    """tar1090-Feeder abtasten und States in die lokale SQLite-Historie schreiben."""
+    import requests
+
+    if debug:
+        logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(name)s: %(message)s")
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    log = logging.getLogger("fluglaerm.cli")
+    store = StateStore(db)
+    store.init_schema()
+    log.info("sammle von http://%s:%d/data/aircraft.json -> %s (Intervall %d s%s)",
+             host, port, db, interval,
+             ", einmalig" if once else (f", Dauer {duration:g} s" if duration is not None else ", endlos bis Ctrl-C"))
+    snapshots, n_hist = import_history(store, host, port)
+    log.info("History-Backfill: %d Snapshots, %d States gespeichert", snapshots, n_hist)
+    if once:
+        try:
+            n = collect_once(store, host, port)
+        except requests.RequestException as exc:
+            raise click.ClickException(f"Feeder nicht erreichbar: {exc}")
+        log.info("%d States gespeichert", n)
+        click.echo(f"{n} States gespeichert")
+        return
+    t0 = time.monotonic()
+    total = 0
+    rounds = 0
+    try:
+        while duration is None or time.monotonic() - t0 < duration:
+            try:
+                n = collect_once(store, host, port)
+                total += n
+                rounds += 1
+                log.info("%d States gespeichert (Abfrage %d, gesamt %d)", n, rounds, total)
+            except requests.RequestException as exc:
+                log.warning("Feeder nicht erreichbar: %s", exc)
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        pass
+    log.info("fertig: %d Abfragen, %d States gespeichert", rounds, total)
 
 
 @cli.command()

@@ -14,21 +14,26 @@ Registry-Format: {"<icao24 lowercase hex>": "<ANP acft_id>"},
 z.B. {"3c6444": "A320-250N"}.
 """
 
+from __future__ import annotations
+
 import logging
 import math
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from fluglaerm.anp_db import AnpDatabase
 from fluglaerm.common.geo import lateral_offset_m, slant_m
 from fluglaerm.common.types import Receiver
+from fluglaerm.engine import acoustic as ac
+from fluglaerm.engine.anhang5 import grenzwert_status
 from fluglaerm.engine.npd import (
     duration_correction,
     installation_correction,
     interp_npd,
     lateral_attenuation,
 )
-from fluglaerm.ist_laerm.ist import IST_LABEL
 from fluglaerm.ist_laerm.track import Track
 
 logger = logging.getLogger(__name__)
@@ -38,7 +43,73 @@ CLIMB_VR_MS = 0.5  # Vertikalrate-Schwelle climb/descent (m/s)
 LEVEL_SPLIT_FT = 6000.0  # Level-Flug ≤ 6000 ft AFE → Approach (idle), sonst MaxClimb
 MAX_PROC_ALT_FT = 10000.0  # ANP-Prozeduren (dep/arr) enden bei 10 000 ft AFE; darüber D/MaxClimb-Schätzung (estimate=True)
 FT_PER_M = 1.0 / 0.3048
+KLEIN_MTOM_LB = 19000.0  # LSV Anhang 5: Kleinluftfahrzeug ≤ 8618 kg MTOM
+TAG_S = 16 * 3600  # 57600 — Tag 06–22 (Grossflugzeuge)
+KLEIN_TAG_S = 14 * 3600  # 50400 — Kleinflugzeuge nur 06–20
+NACHT_S = 3600  # je Nachtstunde
+OWN_LABEL = (
+    "Ist-Beobachtung über das Abfragefenster, kein Jahresmittel; "
+    "nicht rechtsgültig (massgebend: Berechnungsmodell BAZL/FLULA2 "
+    "mit genehmigtem Datensatz)"
+)
 
+
+def lsv_weight_class(mtom_lb: float | None) -> str:
+    """'klein' wenn MTOM ≤ 8618 kg (19 000 lb), sonst 'gross'; None → 'gross'."""
+    return "klein" if (mtom_lb is not None and mtom_lb <= KLEIN_MTOM_LB) else "gross"
+
+
+def local_hour(ts: int) -> int:
+    """Stunde in Europe/Zurich (DST-fähig via zoneinfo)."""
+    return datetime.fromtimestamp(ts, ZoneInfo("Europe/Zurich")).hour
+
+
+def period_of(ts: int) -> str | None:
+    """'tag' | 'nacht1' | 'nacht2' | None (ts ≤ 0 oder 00–06, ZRH geschlossen)."""
+    if ts <= 0:
+        return None
+    h = local_hour(ts)
+    if 6 <= h <= 21:
+        return "tag"
+    if h == 22:
+        return "nacht1"
+    if h == 23:
+        return "nacht2"
+    return None  # 00–06 inkl. letzte Nachtstunde 05–06 (LST_NIGHT_CLOSED)
+
+
+
+def beurteilung_from_rows(
+    rows: list[AircraftLevel], es: int
+) -> tuple[float, float, float, dict[str, float], dict[str, str], int, int]:
+    """-> (lrt, lrk, lrg, lrn, status, n_klein, n_gross). Fenster-Leq, kein Jahresmittel."""
+    gross: dict[str, list[float]] = {"tag": [], "nacht1": [], "nacht2": []}
+    klein: list[float] = []
+    for r in rows:
+        pid = period_of(r.ts)
+        if pid is None:
+            continue
+        if r.weight_class == "klein":
+            if pid == "tag" and 6 <= local_hour(r.ts) <= 19:  # Klein nur 06–20
+                klein.append(r.sel_db)
+        elif pid in gross:
+            gross[pid].append(r.sel_db)
+    lrg = ac.accumulate_leq(gross["tag"], TAG_S)
+    lrk = (
+        ac.klein_lrk(ac.accumulate_leq(klein, KLEIN_TAG_S), len(klein))
+        if klein else float("-inf")
+    )
+    lrt = ac.gesamt_lrt(lrk, lrg) if klein else lrg
+    lrn = {
+        "nacht1": ac.accumulate_leq(gross["nacht1"], NACHT_S),
+        "nacht2": ac.accumulate_leq(gross["nacht2"], NACHT_S),
+    }
+    status = {
+        "tag": grenzwert_status(lrt, es, "tag", "lrt"),
+        "nacht1": grenzwert_status(lrn["nacht1"], es, "nacht1", "lrn"),
+        "nacht2": grenzwert_status(lrn["nacht2"], es, "nacht2", "lrn"),
+    }
+    return lrt, lrk, lrg, lrn, status, len(klein), sum(len(v) for v in gross.values())
 
 @dataclass
 class OwnDetail:
@@ -101,6 +172,7 @@ class AircraftLevel:
     slant_m: float
     lmax_db: float
     sel_db: float
+    weight_class: str = "gross"  # "klein" | "gross"
     ts: int = 0  # Sample-Zeitpunkt des ausgewiesenen Werts (Unix, 0 = unbekannt)
     via: str = "registry"  # "registry" | "substitution" (EASA-Ersatztabelle)
     delta_db: float = 0.0  # EASA-Ersatzzuschlag Δ (dB) auf Lmax/SEL; 0 = keiner
@@ -145,7 +217,14 @@ class OwnResult:
     substituted: list[str]  # "callsign (icao24): ICAO → Proxy (Δdep …, Δapp …)"
     skipped: list[str]  # "… — Grund"
     level_db: float  # 10·log10(Σ 10^(lmax/10)); -inf wenn leer
-    label: str = IST_LABEL
+    lrt: float = float("-inf")
+    lrk: float = float("-inf")
+    lrg: float = float("-inf")
+    lrn: dict[str, float] = field(default_factory=dict)
+    status: dict[str, str] = field(default_factory=dict)
+    n_klein: int = 0
+    n_gross: int = 0
+    label: str = OWN_LABEL
 
 
 def isa_temp_c(alt_msl_ft: float) -> float:
@@ -345,7 +424,7 @@ def evaluate_own(
             base_le, _ = interp_npd(t_d, cnt, slant)
             di = installation_correction(elev_deg, mount)
             lam = lateral_attenuation(elev_deg, lat)
-            dv = duration_correction(pos.speed_kn, t_d.ref_speed_kn)
+            dv = duration_correction(max(pos.speed_kn, 50.0), t_d.ref_speed_kn)
             lmax = base_lmax + di - lam + delta
             sel = base_le + dv + di - lam + delta
             logger.debug(
@@ -413,6 +492,7 @@ def evaluate_own(
                 slant_m=slant,
                 lmax_db=lmax,
                 sel_db=sel,
+                weight_class=lsv_weight_class(ac.get("max_gross_takeoff_weight_lb")),
                 ts=pos.ts,
                 via=via,
                 delta_db=delta,
@@ -442,7 +522,10 @@ def evaluate_own(
         "L_jetzt=%.1f dB",
         len(rows), len(substituted), len(unknown), len(skipped), level,
     )
+    lrt, lrk, lrg, lrn, status, n_klein, n_gross = beurteilung_from_rows(rows, receiver.es)
     return OwnResult(
         rows=rows, unknown=unknown, substituted=substituted,
         skipped=skipped, level_db=level,
+        lrt=lrt, lrk=lrk, lrg=lrg, lrn=lrn, status=status,
+        n_klein=n_klein, n_gross=n_gross,
     )

@@ -3,17 +3,24 @@
 from __future__ import annotations
 
 import math
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import requests
 
 from fluglaerm.common.types import Receiver
+from fluglaerm.engine import acoustic as ac
 from fluglaerm.engine.npd import NpdTable
 from fluglaerm.ist_laerm.opensky import OpenSkyClient
 from fluglaerm.ist_laerm.own import (
     ARP_ALT_M,
+    AircraftLevel,
+    beurteilung_from_rows,
     calibrated_airspeed_kt,
     corrected_net_thrust,
     evaluate_own,
+    lsv_weight_class,
+    period_of,
     pick_phase,
 )
 from fluglaerm.ist_laerm.track import Position, Track
@@ -63,10 +70,10 @@ class FakeDb:
 
 
 def _track(icao24="abc", callsign="S1", east=2684000.0, north=1256000.0,
-           afe_ft=2000.0, speed_kn=180.0, vr=5.0, ground=False):
+           afe_ft=2000.0, speed_kn=180.0, vr=5.0, ground=False, ts: int = 1):
     return Track(
         icao24=icao24, callsign=callsign, aircraft_type="X",
-        positions=[Position(ts=1, east=east, north=north,
+        positions=[Position(ts=ts, east=east, north=north,
                             alt_m=ARP_ALT_M + afe_ft * 0.3048,
                             speed_kn=speed_kn, track_deg=0.0,
                             vertical_rate_ms=vr, on_ground=ground)],
@@ -148,6 +155,12 @@ def test_ground_and_below_ground_skips():
     r2 = evaluate_own(REC, [_track(afe_ft=0.0)], db, reg)
     assert any("unter Bodenebene" in s for s in r2.skipped)
 
+
+def test_zero_speed_does_not_crash():
+    # tar1090-History ohne gs → velocity NULL → speed_kn 0 (local --source local)
+    db, reg = FakeDb(), {"abc": "A320-250N"}
+    res = evaluate_own(REC, [_track(speed_kn=0.0)], db, reg)
+    assert len(res.rows) == 1
 
 def test_overflight_estimated_not_skipped():
     db, reg = FakeDb(), {"abc": "A320-250N"}
@@ -438,3 +451,62 @@ def test_render_own_report():
     assert "data/anp.sqlite" in md
     assert "L_jetzt" in md
     assert "Methodik" in md
+
+def _lvl(icao24: str, callsign: str, sel: float, ts: int, wc: str = "gross") -> AircraftLevel:
+    return AircraftLevel(
+        icao24=icao24, callsign=callsign, acft_id="A320-250N",
+        description="Airbus A320-250N", engines=2, wing="Wing",
+        phase="departure", thrust_rating="MaxClimb", cnt_lbf=20000.0,
+        slant_m=1000.0, lmax_db=sel, sel_db=sel,
+        weight_class=wc, ts=ts,
+    )
+
+
+def _zurich_ts(hour: int, minute: int = 0) -> int:
+    return int(datetime(2026, 1, 15, hour, minute, tzinfo=ZoneInfo("Europe/Zurich")).timestamp())
+
+
+def test_lsv_weight_class():
+    assert lsv_weight_class(19000.0) == "klein"
+    assert lsv_weight_class(19000.1) == "gross"
+    assert lsv_weight_class(None) == "gross"
+
+
+def test_period_of_buckets():
+    assert period_of(_zurich_ts(14)) == "tag"
+    assert period_of(_zurich_ts(22, 30)) == "nacht1"
+    assert period_of(_zurich_ts(23, 59)) == "nacht2"
+    assert period_of(_zurich_ts(3)) is None
+    assert period_of(0) is None
+
+
+def test_beurteilung_from_rows_aggregates_and_status():
+    rows = [
+        _lvl("a1", "T1", 90.0, _zurich_ts(14)),
+        _lvl("a2", "N1", 90.0, _zurich_ts(22, 30)),
+    ]
+    lrt, lrk, lrg, lrn, status, n_klein, n_gross = beurteilung_from_rows(rows, 2)
+    assert abs(lrg - (90.0 - 10 * math.log10(57600))) < 0.05
+    assert lrt == lrg  # kein klein
+    assert abs(lrn["nacht1"] - (90.0 - 10 * math.log10(3600))) < 0.05
+    assert status["tag"] == "eingehalten"
+    assert status["nacht1"] == "PW überschritten"
+    assert n_klein == 0
+    assert n_gross == 2
+
+
+def test_beurteilung_empty_is_minus_inf():
+    lrt, lrk, lrg, lrn, status, n_klein, n_gross = beurteilung_from_rows([], 2)
+    assert lrt == lrk == lrg == float("-inf")
+    assert lrn == {"nacht1": float("-inf"), "nacht2": float("-inf")}
+    assert status["tag"] == "eingehalten"
+
+
+def test_klein_uses_14h_and_lrk():
+    rows = [_lvl("k1", "K1", 90.0, _zurich_ts(14), wc="klein")]
+    lrt, lrk, lrg, lrn, status, n_klein, n_gross = beurteilung_from_rows(rows, 2)
+    expect_lrk = ac.klein_lrk(90.0 - 10 * math.log10(50400), 1)
+    assert abs(lrk - expect_lrk) < 0.05
+    assert lrt == ac.gesamt_lrt(lrk, float("-inf"))
+    assert lrg == float("-inf")
+    assert n_klein == 1

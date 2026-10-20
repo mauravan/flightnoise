@@ -2,6 +2,7 @@
 
 import time
 from fluglaerm.common.types import Receiver
+from fluglaerm.engine.anhang5 import GRENZWERTE
 from fluglaerm.ist_laerm.own import ARP_ALT_M, OwnResult
 
 
@@ -219,13 +220,33 @@ def render_own_report(
     lines += ["## Ersetzt", *_bullets(result.substituted), ""]
     lines += ["## Unbekannt", *_bullets(result.unknown), ""]
     lines += ["## Übersprungen", *_bullets(result.skipped), ""]
+    def _fmt_db(v: float) -> str:
+        return "−∞" if v == float("-inf") else f"{v:.1f}"
     value = (
         "−∞" if result.level_db == float("-inf") else f"{result.level_db:.1f}"
     )
+    def _gw(art: str, periode: str | None = None) -> str:
+        parts: list[str] = []
+        for es in (1, 2, 3, 4):
+            st = GRENZWERTE[art][es] if periode is None else GRENZWERTE[art][es][periode]
+            parts.append(f"ES{es} {st['pw']}/{st['igw']}/{st['aw']}")
+        return "; ".join(parts)
+    gw_lrt = _gw("lrt")
+    gw_n1 = _gw("lrn", "nacht1")
+    gw_n2 = _gw("lrn", "nacht2")
+    gw_lrk = _gw("lrk")
     lines += [
         "## Ergebnis",
         f"L_jetzt = {value} dB aus {len(result.rows)} Flugzeugen",
         f"> {result.label}",
+        "",
+        "## Beurteilungspegel (Ist-Beobachtung, kein Jahresmittel)",
+        f"ES {receiver.es} ({receiver.nutzung})",
+        f"- Lrt (Tag): {_fmt_db(result.lrt)} — {result.status.get('tag', '—')}",
+        f"- Lrn (nacht1): {_fmt_db(result.lrn.get('nacht1', float('-inf')))} — {result.status.get('nacht1', '—')}",
+        f"- Lrn (nacht2): {_fmt_db(result.lrn.get('nacht2', float('-inf')))} — {result.status.get('nacht2', '—')}",
+        f"- Lrk: {_fmt_db(result.lrk)}   Lrg: {_fmt_db(result.lrg)}",
+        f"- Klein: {result.n_klein}   Gross: {result.n_gross}",
         "",
         "## Methodik & Näherungen",
         "- Kette: OpenSky-State → Registry/Ersatztabelle → aircraft/engine → "
@@ -243,6 +264,17 @@ def render_own_report(
         "| Lmax | Maximalpegel des Überflugs in dB(A) |",
         "| SEL | Sound Exposure Level in dB(A): auf 1 s normierte Schallenergie des Ereignisses |",
         "| L_jetzt | energetische Summe aller Lmax: 10·log10(Σ 10^(Lmax/10)) |",
+        "| Lrt / Lrn / Lrk / Lrg | Beurteilungspegel LSV Anhang 5: Tag, Nacht (nacht1/nacht2), Klein- bzw. Grossflugzeuge |",
+        "| Ist-Beobachtung | Leq über die Standardperiode aus den beobachteten Ereignissen; kein Jahresmittel, nicht rechtsgültig |",
+        "| Lrt-Formel | Lrt = 10·log10(10^(Lrk/10) + 10^(Lrg/10)); ohne Klein: Lrt = Lrg |",
+        "| Lrg-Formel | Lrg = 10·log10((1/57600)·Σ 10^(SEL/10)) über Gross-Ereignisse Tag 06–22 |",
+        "| Lrk-Formel | Lrk = Leq_k + 10·log10(N/15000); Leq_k = 10·log10((1/50400)·Σ 10^(SEL/10)) über Klein-Ereignisse 06–20, N = Anzahl |",
+        "| Lrn-Formel | Lrn = 10·log10((1/3600)·Σ 10^(SEL/10)) je Nachtstunde (nacht1 22–23, nacht2 23–24) |",
+        "| PW / IGW / AW | Planungs-, Immissionsgrenz-, Alarmwert LSV Anhang 5; Status: Pegel > AW → AW überschritten, > IGW → IGW überschritten, > PW → PW überschritten, sonst eingehalten |",
+        f"| Lrt-Grenzwerte (ES 1–4) | PW / IGW / AW: {gw_lrt} |",
+        f"| Lrn-Grenzwerte nacht1 (ES 1–4) | PW / IGW / AW: {gw_n1} |",
+        f"| Lrn-Grenzwerte nacht2 (ES 1–4) | PW / IGW / AW: {gw_n2} |",
+        f"| Lrk-Grenzwerte (ES 1–4) | PW / IGW / AW: {gw_lrk} |",
         "| CNT | korrigierter Nettoschub (corrected net thrust) in lbf, aus B-1/B-23-Koeffizienten |",
         "| B-1 | Doc-29-Triebwerksmodell: Schub als Funktion von CAS, Druckhöhe und Temperatur |",
         "| HiTemp-Flat-Rating | Min(low, hi)-Schub bei hohen Temperaturen (hi-Koeffizienten aktiv) |",
